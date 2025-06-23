@@ -1,0 +1,176 @@
+import React, { useState } from "react";
+import {
+  BrowserRouter as Router,
+  Routes,
+  Route,
+  Link,
+  useLocation,
+  useNavigate,
+} from "react-router-dom";
+import { FaHome, FaHeart, FaShoppingCart } from "react-icons/fa";
+
+// Composant Header avec logo + slogan + bouton profil
+function Header({ isLoggedIn, onProfileClick }) {
+  return (
+    <header
+      style={{
+        backgroundColor: "#f9f5e7",
+        padding: "10px 20px",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "space-between",
+        boxShadow: "0 2px 4px rgba(0,0,0,0.1)",
+      }}
+    >
+      <div style={{ fontSize: "2rem", fontWeight: "bold", color: "#3a5a40" }}>
+        🌿 EcoLoop
+      </div>
+      <div
+        style={{
+          fontStyle: "italic",
+          color: "#6b705c",
+          flexGrow: 1,
+          marginLeft: "20px",
+          fontSize: "1rem",
+        }}
+      >
+        Le mobilier qui évolue avec vous
+      </div>
+      <button
+        onClick={onProfileClick}
+        style={{
+          backgroundColor: "#3a5a40",
+          color: "white",
+          border: "none",
+          borderRadius: "5px",
+          padding: "6px 12px",
+          cursor: "pointer",
+        }}
+      >
+        {isLoggedIn ? "Profil" : "Se connecter"}
+      </button>
+    </header>
+  );
+}
+
+// Pages basiques pour l’exemple
+function Home() {
+  return (
+    <div style={{ padding: "20px" }}>
+      <h2>Bienvenue chez EcoLoop</h2>
+      <p>Découvrez nos meubles modulaires recyclés.</p>
+    </div>
+  );
+}
+
+function Favorites() {
+  return (
+    <div style={{ padding: "20px" }}>
+      <h2>Favoris</h2>
+      <p>Vos articles préférés ici.</p>
+    </div>
+  );
+}
+
+function Cart() {
+  return (
+    <div style={{ padding: "20px" }}>
+      <h2>Panier</h2>
+      <p>Votre panier est vide.</p>
+    </div>
+  );
+}
+
+function Profile({ isLoggedIn, onLogin }) {
+  return (
+    <div style={{ padding: "20px" }}>
+      <h2>{isLoggedIn ? "Votre profil" : "Veuillez vous connecter"}</h2>
+      {!isLoggedIn && (
+        <button onClick={onLogin} style={{ padding: "10px", cursor: "pointer" }}>
+          Se connecter
+        </button>
+      )}
+      {isLoggedIn && <p>Bienvenue dans votre espace personnel.</p>}
+    </div>
+  );
+}
+
+export default function App() {
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const location = useLocation();
+  const navigate = useNavigate();
+
+  // Fonction pour forcer connexion
+  function requireLogin(action) {
+    if (!isLoggedIn) {
+      alert("Veuillez vous connecter pour continuer.");
+      navigate("/profile");
+    } else {
+      action();
+    }
+  }
+
+  // Pages où on n’affiche pas la barre en bas
+  const noFooterOnPaths = ["/"];
+
+  // Fonction clic profil / connexion
+  function handleProfileClick() {
+    if (!isLoggedIn) {
+      setIsLoggedIn(true);
+      alert("Connexion réussie !");
+    }
+    navigate("/profile");
+  }
+
+  // Barre en bas avec icônes
+  const Footer = () => (
+    <footer
+      style={{
+        position: "fixed",
+        bottom: 0,
+        left: 0,
+        right: 0,
+        backgroundColor: "#f9f5e7",
+        borderTop: "1px solid #ccc",
+        display: "flex",
+        justifyContent: "space-around",
+        padding: "10px 0",
+      }}
+    >
+      <FaHome
+        size={24}
+        style={{ cursor: "pointer" }}
+        onClick={() => navigate("/")}
+        title="Accueil"
+      />
+      <FaHeart
+        size={24}
+        style={{ cursor: "pointer" }}
+        onClick={() => requireLogin(() => navigate("/favorites"))}
+        title="Favoris"
+      />
+      <FaShoppingCart
+        size={24}
+        style={{ cursor: "pointer" }}
+        onClick={() => requireLogin(() => navigate("/cart"))}
+        title="Panier"
+      />
+    </footer>
+  );
+
+  return (
+    <div style={{ backgroundColor: "#fdf6e3", minHeight: "100vh", paddingBottom: "60px" }}>
+      <Header isLoggedIn={isLoggedIn} onProfileClick={handleProfileClick} />
+      <Routes>
+        <Route path="/" element={<Home />} />
+        <Route path="/favorites" element={<Favorites />} />
+        <Route path="/cart" element={<Cart />} />
+        <Route
+          path="/profile"
+          element={<Profile isLoggedIn={isLoggedIn} onLogin={() => setIsLoggedIn(true)} />}
+        />
+      </Routes>
+      {!noFooterOnPaths.includes(location.pathname) && <Footer />}
+    </div>
+  );
+}
